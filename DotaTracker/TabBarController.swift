@@ -18,10 +18,10 @@ class TabBarController: UITabBarController, UITabBarControllerDelegate {
     //MARK: tab setup:)
     
     private func setupTabs() {
-        let home = self.createNav(with: "Home", and: UIImage(systemName: "house.fill"), vc: HomeViewController())
-        let heroes = self.createNav(with: "Heroes", and: UIImage(systemName: "person.3.fill"), vc: HeroesViewController())
-        let matches = self.createNav(with: "Matches", and: UIImage(systemName: "note.text"), vc: MatchesViewController())
-        let profile = self.createNav(with: "Profile", and: UIImage(systemName: "person.crop.circle"), vc: UserViewController())
+        let home = self.createNav(with: "Главная", and: UIImage(systemName: "house.fill"), vc: HomeViewController())
+        let heroes = self.createNav(with: "Герои", and: UIImage(systemName: "person.3.fill"), vc: HeroesViewController())
+        let matches = self.createNav(with: "История матчей", and: UIImage(systemName: "note.text"), vc: MatchesViewController())
+        let profile = self.createNav(with: "Профиль", and: UIImage(systemName: "person.crop.circle"), vc: UserViewController())
         self.setViewControllers([home, heroes, matches, profile], animated: true)
     }
     

@@ -264,6 +264,13 @@ class MatchesViewController: UIViewController {
             self.present(alert, animated: true)
         }
     }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            tableView.reloadData()
+        }
+    }
 }
 
 extension MatchesViewController: UITableViewDelegate, UITableViewDataSource {
@@ -290,7 +297,7 @@ class MatchTableViewCell: UITableViewCell {
         view.backgroundColor = UIColor(named: "BackgroundSecondary")
         view.layer.cornerRadius = 12
         view.layer.borderWidth = 1
-        //view.layer.borderColor = UIColor.systemGray3.cgColor
+        view.layer.borderColor = UIColor(named: "BackgroundTertiary")?.cgColor
         return view
     }()
     
@@ -300,7 +307,7 @@ class MatchTableViewCell: UITableViewCell {
         iv.layer.cornerRadius = 8
         iv.clipsToBounds = true
         iv.layer.borderWidth = 2
-        //iv.layer.borderColor = UIColor.systemGray3.cgColor
+        iv.layer.borderColor = UIColor(named: "BackgroundTertiary")?.cgColor
         return iv
     }()
     
@@ -316,14 +323,43 @@ class MatchTableViewCell: UITableViewCell {
         return view
     }()
     
+    private let radiantBadge: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 14
+        view.backgroundColor = .systemGreen
+        return view
+    }()
+    
+    private let direBadge: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 14
+        view.backgroundColor = .systemRed
+        return view
+    }()
+    
+    private let radiantLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.textAlignment = .center
+        label.textColor = .white
+        return label
+    }()
+    
+    private let direLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.textAlignment = .center
+        label.textColor = .white
+        return label
+    }()
+    
     private let resultLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .semibold)
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
         label.textAlignment = .center
         return label
     }()
     
-    // Иконка среднего ранга перемещена между героем и результатом
     private let rankIconView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFit
@@ -360,11 +396,15 @@ class MatchTableViewCell: UITableViewCell {
             rankIconView,
             resultBadge,
             statsStack,
-            itemsContainer
+            itemsContainer,
+            radiantBadge,
+            direBadge
         )
         
         resultBadge.addSubview(resultLabel)
-        
+        radiantBadge.addSubview(radiantLabel)
+        direBadge.addSubview(direLabel)
+                
         // Контейнер
         containerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -433,6 +473,32 @@ class MatchTableViewCell: UITableViewCell {
             itemsContainer.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12),
             itemsContainer.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12)
         ])
+        
+        radiantBadge.translatesAutoresizingMaskIntoConstraints = false
+        direBadge.translatesAutoresizingMaskIntoConstraints = false
+        radiantLabel.translatesAutoresizingMaskIntoConstraints = false
+        direLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            // Плашка Radiant (зеленая)
+            radiantBadge.topAnchor.constraint(equalTo: resultBadge.bottomAnchor, constant: 8),
+            radiantBadge.leadingAnchor.constraint(equalTo: rankIconView.trailingAnchor, constant: 12),
+            radiantBadge.widthAnchor.constraint(equalToConstant: 60),
+            radiantBadge.heightAnchor.constraint(equalToConstant: 28),
+            
+            // Плашка Dire (красная)
+            direBadge.topAnchor.constraint(equalTo: resultBadge.bottomAnchor, constant: 8),
+            direBadge.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12),
+            direBadge.widthAnchor.constraint(equalToConstant: 60),
+            direBadge.heightAnchor.constraint(equalToConstant: 28),
+            
+            // Лейблы внутри плашек
+            radiantLabel.centerXAnchor.constraint(equalTo: radiantBadge.centerXAnchor),
+            radiantLabel.centerYAnchor.constraint(equalTo: radiantBadge.centerYAnchor),
+            
+            direLabel.centerXAnchor.constraint(equalTo: direBadge.centerXAnchor),
+            direLabel.centerYAnchor.constraint(equalTo: direBadge.centerYAnchor)
+        ])
     }
     
     // MARK: - Configuration
@@ -443,6 +509,17 @@ class MatchTableViewCell: UITableViewCell {
         configureStats(match: match)
         configureItems(match: match, items: items)
         configureRank(match: match)
+        updateBorderColors()
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        updateBorderColors()
+    }
+
+    private func updateBorderColors() {
+        containerView.layer.borderColor = UIColor(named: "BackgroundTertiary")?.cgColor
+        heroImageView.layer.borderColor = UIColor(named: "BackgroundTertiary")?.cgColor
     }
     
     private func configureHero(match: Match, heroes: [Int: Hero]) {
@@ -479,11 +556,18 @@ class MatchTableViewCell: UITableViewCell {
     
     private func configureResult(match: Match) {
         guard let player = match.players.first else { return }
+        
         let radiantKills = caculateRadiantScore(match: match, radiantKills: match.radiantKills)
         let direKills = calculateDireScore(match: match, direKills: match.direKills)
-        resultLabel.text = player.isVictory ? "\(radiantKills) ПОБЕДА \(direKills)" : "\(radiantKills) ПОРАЖЕНИЕ \(direKills)"
+        
+        // Основной результат матча
+        resultLabel.text = player.isVictory ? "ПОБЕДА" : "ПОРАЖЕНИЕ"
         resultBadge.backgroundColor = player.isVictory ? .systemGreen : .systemRed
         resultLabel.textColor = .white
+        
+        // Плашки с количеством убийств
+        radiantLabel.text = "\(radiantKills)"
+        direLabel.text = "\(direKills)"
     }
     
     private func configureRole(match: Match) {

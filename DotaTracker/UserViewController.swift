@@ -106,6 +106,7 @@ class UserViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "BackgroundPrimary")
+        title = "Профиль"
         setupNavigationBar()
         setupUI()
         fetchUserData()
@@ -120,6 +121,7 @@ class UserViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        avatarImageView.layer.borderColor = UIColor(named: "BackgroundTertiary")?.cgColor
         // Обновляем состояние Dota Plus при возвращении на экран
         if let playerData = currentPlayerData {
             if playerData.steamAccount.isDotaPlusSubscriber {
@@ -136,7 +138,6 @@ class UserViewController: UIViewController {
         fetchUserData()
     }
 
-    // Не забудьте удалить наблюдатель при деинициализации
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
@@ -169,7 +170,7 @@ class UserViewController: UIViewController {
         avatarImageView.clipsToBounds = true
         avatarImageView.layer.cornerRadius = 50
         avatarImageView.layer.borderWidth = 2
-        avatarImageView.layer.borderColor = UIColor.systemGray6.cgColor
+        avatarImageView.layer.borderColor = UIColor(named: "BackgroundTertiary")?.cgColor
         avatarImageView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
@@ -331,6 +332,7 @@ class UserViewController: UIViewController {
         statsContainer.addArrangedSubview(secondRow)
 
         NSLayoutConstraint.activate([
+            profileCard.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             profileCard.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.9),
             
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
